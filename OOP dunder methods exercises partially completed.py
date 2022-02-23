@@ -160,4 +160,4 @@ print(c + c_2)
 # c.r_setter(300)
 # c.r = 300
 # c.g = -200
-# print(c)
+print(c)
