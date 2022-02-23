@@ -156,7 +156,7 @@ class Color:
 
 c = Color(10, 20, 30)
 c_2 = Color(20, 30, 250)
-print(c + c_2)
+# print(c + c_2)
 # c.r_setter(300)
 # c.r = 300
 # c.g = -200
