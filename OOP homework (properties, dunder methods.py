@@ -23,6 +23,78 @@
 # Լրացուցիչ, եթե քիմիայի սիրահար եք, կարող եք ատոմներին ավելացնել լիցքեր, սահմանել վալենտականությունը և դրանց հիման վրա
 # փոփոխել գումարման տրամաբանությունը։
 
+class UnknownAtom(Exception):
+    def __init__(self, message='Atom is not from our list'):
+        super().__init__()
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
+class Atom:
+    __atoms = ('C', 'N', 'H', 'O', 'P')
+
+    def __init__(self, name):
+        if name not in self.__atoms:
+            raise UnknownAtom(f'{name} is not Atom')
+        self.__name = name
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, val):
+        raise ValueError('it is read only property')
+
+    def __add__(self, other):
+        if type(other) != Atom:
+            raise TypeError
+        return Molecule([self.name, other.name])
+
+    def __str__(self):
+        return f'Atom: {self.name}'
+
+
+class Molecule:
+    def __init__(self, atoms):
+        if type(atoms) != list or len(atoms) <= 1:
+            raise TypeError
+
+        self.atoms = atoms
+
+    def __add__(self, other):
+        if type(other) == Atom:
+            self.atoms.append(other.name)
+            return self
+        elif type(other) == Molecule:
+            return Molecule(self.atoms + other.atoms)
+
+    def __str__(self):
+        return '-'.join(self.atoms)
+
+
+# Atom('R')
+a1 = Atom('H')
+a2 = Atom('H')
+a3 = Atom('O')
+a4 = Atom('P')
+
+
+# a1.__add__(a2)
+
+# print(a1)
+# print(a2)
+# m = a1 + a2
+# print(type(m))
+# print(m)
+# another_m = m + a4
+# print(another_m)
+# print(a1)
+# print(a1 + a2)
+# print(a1 + a2 + (a3 + a4))
+
 # 2. Let's write a Music Player Class!
 #    a) Create a Song class. The class will have 4 attributes - name, artist, album and the year.
 #    b) Now let's create a Playlist. Playlist class will contain Songs. We should have a method that will load songs
@@ -53,6 +125,95 @@
 # Այս կետերը պարտադիր են, սակայն չեն պարունակում նվագարկիչի ողջ բնութագրությունը։ Կարող եք ազատ ավելացնել հավելյալ
 # տրամաբանություն։
 
+class Song:
+    def __init__(self, name, artist, album, year):
+        self.year = year
+        self.album = album
+        self.name = name
+        self.artist = artist
+
+    def __str__(self):
+        return f'Name: {self.name}\nArtist: {self.artist}\nAlbum: {self.album}\nYear:{self.year}'
+
+
+class Playlist:
+    def __init__(self):
+        self.songlist = []
+
+    def load_songs(self, filepath):
+        with open(filepath) as file:
+            for line in file.readlines():
+                artist, album, year, name = line.split('\t')
+                name = name.strip()
+                self.songlist.append(Song(name, artist, album, year))
+
+    def __len__(self):
+        return len(self.songlist)
+
+
+class Player:
+    def __init__(self, playlist, current_index=0):
+        if type(playlist) != Playlist:
+            raise ValueError
+
+        if current_index < 0 or current_index > len(playlist) - 1:
+            raise IndexError
+
+        self.playlist = playlist
+        self.is_playing = False
+        self.current_index = current_index
+
+    def play(self):
+        if self.is_playing:
+            print('Player is already playing')
+        else:
+            self.is_playing = True
+            print('Start playing...')
+
+        self.current_song()
+
+    def stop(self):
+        self.is_playing = False
+        print('Stop playing...')
+
+    def next(self):
+
+        if self.current_index == len(self.playlist) - 1:
+            print('End of playlist')
+        else:
+            self.current_index += 1
+            self.current_song()
+
+    def prev(self):
+
+        if self.current_index == 0:
+            print('Start of playlist')
+        else:
+            self.current_index -= 1
+            self.current_song()
+
+    def current_song(self):
+        print('=' * 50)
+        print(self.playlist.songlist[self.current_index])
+        print('=' * 50)
+
+
+playlist = Playlist()
+playlist.load_songs('albums.txt')
+
+player = Player(playlist)
+player.play()
+player.next()
+player.prev()
+player.prev()
+
+
+# import os
+# print(os.getcwd())
+# with open('./albums.txt') as file:
+#     for line in file.readlines():
+#         print(line)
+
 # 3. Create a class named Length. The default unit for length is meter. The class must contain some conversions
 # information, e.g. feet -> m, km -> m, yard -> m, mile -> m etc.
 #    a) Create a dictionary that will hold the metrics. Keys will be the unit name and their values will be the
@@ -74,3 +235,52 @@
 #    d) Սահմանել __str__ մեթոդը։ Այս մեթոդը մեզ ցույց կտա օբյեկտի երկարությունը մետրերով։
 #    e) Սահմանել __repr__ մեթոդը։ Այս մեթոդը մեզ ցույց կտա օբյեկտի երկարությունը այն միավորով, որով սահմանվել է։
 # Լրացուցիչ, կարող եք ավելացնել հավելյալ տրամաբանություն որտեղ ճիշտ կգտնեք։
+
+
+class Length:
+    __conversion = {'m': 1, 'km': 1000, 'yard': 1.094, 'mile': 1609.34}
+
+    def __init__(self, length, unit='m'):
+        if unit not in Length.__conversion.keys():
+            raise TypeError
+
+        self.length = length
+        self.unit = unit
+
+    def __add__(self, other):
+        if type(other) != Length:
+            raise TypeError
+
+        if self.unit == other.unit:
+            return Length(self.length + other.length, self.unit)
+        else:
+            return Length(Length.get_meter(self) + Length.get_meter(other))
+
+    @staticmethod
+    def get_meter(x):
+        return Length.__conversion[x.unit] * x.length
+
+    def __repr__(self):
+        return f'{self.length} {self.unit}'
+
+    def __str__(self):
+        return f'{Length.get_meter(self)} m'
+
+    def convert(self, unit):
+        if unit not in Length.__conversion.keys():
+            raise TypeError
+        meter = Length.get_meter(self)
+        with_unit_length = meter / Length.__conversion[unit]
+
+        self.unit = unit
+        self.length = with_unit_length
+        return self
+
+
+# l = Length(10, 'km')
+# print(l)
+# print(repr(l))
+
+# m = Length(1, 'mile')
+# m.convert('km')
+# print(repr(m))
