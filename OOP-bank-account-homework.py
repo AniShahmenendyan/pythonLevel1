@@ -18,7 +18,6 @@
 # - define the __str__ method. This method will show us the account balance in dollars
 
 
-
 # 2. Օգտագործելով Account կլասը, ստեղծել SavingsAccount(ավանդային հաշիվ) և CurrentAccount(ընթացիկ հաշիվ) կլասներ։
 #     - ավանդային հաշիվը բանկային հաշվի ատրիբուտներից բացի պետք է ունենա նաև interest(տոկոսադրույք) և մեթոդ որով
 #     կավելանա հաճախորդի հաշիվը տոկոսադրույքի չափով։
@@ -56,3 +55,193 @@
 # - the bank must have methods to change the balance of the accounts using the bank account methods
 # - if the account is overdraft, the bank can write a letter to the person associated with the account.
 # - the bank should be able to check the total amount of the person's accounts via ssn in dollar currency
+
+
+class Account:
+    exch = {'dollar': 485, 'euro': 550, "rubly": 6, 'dram': 1}
+
+    def __init__(self, id, name, balance=0, currency='dram'):
+        self._id = id
+        self._name = name
+        self._balance = balance
+        self._currency = currency
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @property
+    def currency(self):
+        return self._currency
+
+    @name.setter
+    def name(self, name):
+        raise ValueError("can't change name")
+
+    @balance.setter
+    def balance(self, balance):
+        raise ValueError("can't change balance")
+
+    @currency.setter
+    def currency(self, currency):
+        raise ValueError("can't change currency")
+
+    @id.setter
+    def id(self, id):
+        raise ValueError("can't change id")
+
+    @staticmethod
+    def exchange(cur, selfcur, bal):
+        if cur != selfcur:
+            res = int(Account.exch[cur] / Account.exch[selfcur] * bal)
+            return res
+        else:
+            return bal
+
+    def credit(self, c, ccur='dram'):
+        r = self.exchange(ccur, self.currency, c)
+        self._balance = self.balance + r
+        print(f'{self.name} balance is {self.balance} {self.currency}')
+        print('=' * 50)
+
+    def debit(self, d, dcur='dram'):
+        r = self.exchange(dcur, self.currency, d)
+        if r <= self.balance:
+            self._balance = self.balance - r
+            print(f'{self.name} balance is {self.balance} {self.currency}')
+            print('=' * 50)
+            return True
+        else:
+            print("havn't enough balance")
+            print('=' * 50)
+            return False
+
+    def transferto(self, t, tcur, another_account):
+        debit = self.debit(t, tcur)
+        if debit:
+            print(f'{self.name} transferted {t} {tcur}, your current balance is {self.balance} {self.currency}')
+            print('=' * 50)
+            another_account.credit(t, tcur)
+        else:
+            print("havn't enough balance to transfer")
+            print('=' * 50)
+
+    def __str__(self):
+        k = int(self.balance * Account.exch[self.currency] / Account.exch['dollar'])
+        return f'{self.name} balance is {k} dollars'
+
+
+class SavingsAccount(Account):
+    def __init__(self, id, name, balance, currency, interest=4):
+        super().__init__(id, name, balance, currency)
+        self.__interest = interest
+
+    @property
+    def interest(self):
+        return self.__interest
+
+    @interest.setter
+    def interest(self, interest):
+        raise ValueError("can't change interest")
+
+    def inter(self):
+        self.credit(self.balance * (self.interest / 100), self.currency)
+        print(f'{self.name} balance is {self.balance} {self.currency}')
+        print('=' * 50)
+
+
+class CurrentAccount(Account):
+    def __init__(self, id, name, balance, currency, overdraft_limit=0):
+        super().__init__(id, name, balance, currency)
+        self.__overdraft_limit = overdraft_limit
+
+    @property
+    def overdraft_limit(self):
+        return self.__overdraft_limit
+
+    @overdraft_limit.setter
+    def overdraft_limit(self, overdraft_limit):
+        raise ValueError("can't change overdraft_limit")
+
+    def debit(self, d, dcur):
+        r = self.exchange(dcur, self.currency, d)
+
+        if r <= self.balance + self.overdraft_limit:
+            self._balance = self.balance - r
+            print(f'{self.name} balance is {self.balance} {self.currency}')
+            print('=' * 50)
+        else:
+            print("Sorry, you have reached you overdraft limit")
+            print('=' * 50)
+
+    def __add__(self, other):
+        if type(self) == type(other):
+            self.credit(other.balance, other.currency)
+            print('=' * 50)
+            print(f'{self.name} and {other.name} account')
+            return self
+        else:
+            print("accounts can't add")
+
+
+class Person:
+    def __init__(self, name, ssn):
+        self.name = name
+        self.ssn = ssn
+
+    def __str__(self):
+        return f'The name of our person is: {self.name}'
+
+    def __hash__(self):
+        return hash(self.ssn)
+
+
+class Bank:
+    def __init__(self):
+        self.account_dict = {}
+
+    def assign_account(self, account, person):
+        person_id = hash(person)
+        if person_id in self.account_dict.keys():
+            self.account_dict[person_id].append(account)
+        else:
+            self.account_dict.update({person_id: [account]})
+
+    def inter(self):
+        for accounts in self.account_dict.values():
+            for account in accounts:
+                if isinstance(account, SavingsAccount):
+                    account.inter()
+
+    def total_money(self, ssn, currency='dram'):
+        bal = 0
+        ssn_accounts = self.account_dict[hash(ssn)]
+        for ssn_account in ssn_accounts:
+            bal += ssn_account.exchange(ssn_account.currency, currency, ssn_account.balance)
+
+        return bal
+
+
+account = Account('id', 'name', 100000, 'dram')
+account.credit(10, 'dollar')
+account.debit(20000)
+print(account)
+
+account_2 = SavingsAccount('id', 'name', 100000, 'dram')
+account_3 = CurrentAccount('id', 'name', 50000, 'dram')
+print(account_2)
+acba = Bank()
+acba.assign_account(account_2, Person('John', 1234567))
+acba.assign_account(account_3, Person('John', 1234567))
+acba.inter()
+print(account_2)
+print(account_3)
+print(acba.total_money(1234567, 'dollar'))
