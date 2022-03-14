@@ -100,7 +100,7 @@ def cache(func):
         if n in memo:
             return memo[n]
         res = func(n)
-        memo.update({n: res})
+        memo[n] = res
         return res
 
     return wrapper
@@ -205,17 +205,14 @@ for i in range(1, 1000):
     arr_rand.append(random.randint(10, 100000))
 
 start_time = time.perf_counter()
-print(rob_wrapper(arr_rand))
 end_time = time.perf_counter()
 rob_wrapper_time = end_time - start_time
 
 start_time = time.perf_counter()
-print(rob_davit(arr_rand))
 end_time = time.perf_counter()
 rob_davit_time = end_time - start_time
 
 start_time = time.perf_counter()
-print(rob_edgar(arr_rand))
 end_time = time.perf_counter()
 rob_edgar_time = end_time - start_time
 

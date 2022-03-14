@@ -23,7 +23,7 @@ def rob_wrapper(lst):
             return memo[index]
 
         res = max(lst[index] + rob(index + 2), rob(index + 1))
-        memo.update({index: res})
+        memo[index] = res
         return res
 
     return rob(0)
