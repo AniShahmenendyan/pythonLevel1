@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import matplotlib.pyplot as plt
 import time
 import numpy
@@ -12,17 +13,17 @@ for i in range(10, 1000):
 
 
 def rob_wrapper(lst):
-    memo = [-1] * len(lst)
+    memo = {}
 
     def rob(index):
         if index > len(lst) - 1:
             return 0
 
-        if memo[index] != -1:
+        if index in memo:
             return memo[index]
 
         res = max(lst[index] + rob(index + 2), rob(index + 1))
-        memo[index] = res
+        memo.update({index: res})
         return res
 
     return rob(0)
@@ -70,7 +71,7 @@ for i in range(len(arr_of_arr)):
     rob_edgar(arr_of_arr[i])
     end = time.perf_counter()
 
-    times_rob_edgar.append(end - start)
+    times_rob_edgar.append((end - start) * 1000)
 
 # In[ ]:
 
@@ -82,7 +83,7 @@ for i in range(len(arr_of_arr)):
     rob_wrapper(arr_of_arr[i])
     end = time.perf_counter()
 
-    times_rob_wrapper.append(end - start)
+    times_rob_wrapper.append((end - start) * 1000)
 
 # In[ ]:
 
@@ -94,7 +95,7 @@ for i in range(len(arr_of_arr)):
     rob_davit(arr_of_arr[i])
     end = time.perf_counter()
 
-    times_rob_davit.append(end - start)
+    times_rob_davit.append((end - start) * 1000)
 
 # In[ ]:
 
@@ -104,6 +105,5 @@ plt.plot(times_rob_edgar, label='times_rob_edgar')
 plt.plot(times_rob_wrapper, label='times_rob_wrapper')
 
 plt.legend()
-# plt.ylim(0, 0.01)
+# plt.xlim(0, 10000)
 plt.show()
-# print(times_rob_wrapper[-1] - times_rob_edgar[-1])
