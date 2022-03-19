@@ -1,0 +1,18 @@
+{
+  "username": "Felix",
+  "email": "f@gmail.com",
+  "contact": [
+    {
+      "name": "Mher",
+      "phone_number": "+3745555555"
+    },
+    {
+      "name": "Arsen",
+      "phone_number": "+3745555555"
+    },
+    {
+      "name": "Davit",
+      "phone_number": "+3745555555"
+    }
+  ]
+}
