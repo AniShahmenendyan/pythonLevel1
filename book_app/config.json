@@ -1,0 +1,7 @@
+{
+  "DB_HOST": "localhost",
+  "DB_USER": "postgres",
+  "DB_PASSWORD": "pass",
+  "DB_NAME": "books_app",
+  "SALT": "verystrongsalttext1232fdfdsafdsafke23984p73y21iour'wjfdhguy6rt*&^Rty8UIOHjbh"
+}
